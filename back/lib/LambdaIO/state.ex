@@ -1,43 +1,36 @@
 defmodule LambdaIO.State do
 
   @moduledoc """
-  --- Players ---
-  players: [
-    %Player{
-      uuid: "2130-asdf-12zx-!@z9",
-      x: 200,
-      y: 300,
-      score: 0
+  --- Game's state ---
+  %Player[
+    {
+      "uuid" => "2130-asdf-12zx-!@z9",
+      "x" => 10,
+      "y" => 23,
+      "score" => 0,
+      "health" => 100
     },
-    %Player{
-      uuid: "9a!0-4sRz-#2Zx-P*9P",
-      x: 100,
-      y: 50,
-      score: 10
+    {
+      "uuid" => "9651-awwa-12zx-!@z9",
+      "x" => 10,
+      "y" => 23,
+      "score" => 0,
+      "health" => 100
     }
-  ],
-
-  --- Actions ---
-  actions: [
-    %Action{
-      uuid: "2130-asdf-12zx-!@z9",
-      movement: [
-        10, 0    # (x, y) increment
-      ],
-      shot: []
+  ]
+  %Shots[
+    {
+      "uuid" => "2130-asdf-12zx-!@z9",
+      "sid" => "awdawdvb",
+      "vector" => [x, y, xt, yt]
     },
-    %Action{
-      uuid: "9a!0-4sRz-#2Zx-P*9P",
-      movement: [
-        10, 5    # (x, y) increment
-      ],
-      shot: [
-        11, 4    #  (x, y) -> shot vector
-      ]
-    }
+    {
+      "uuid" => "237rzf",
+      "sid" => "468awd54",
+      "vector" => [x, y, xt, yt]
+    },
   ]
   """
 
-  defstruct players: [],
-            actions: []
+  defstruct players: [], shots: []
 end
