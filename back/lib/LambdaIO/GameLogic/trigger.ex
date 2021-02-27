@@ -6,9 +6,12 @@ defmodule LambdaIO.GameLogic.Trigger do
     players: [ \n
       %Player{
         uuid: "hash",
-        x: number,
-        y: number,
+        position:{
+          x: number,
+          y: number,
+        },
         score: number,
+        health: number,
         action: %Action{
           shoot: [[number(x), number(y), number(xt), number(yt)]],
           damage: number,
@@ -20,21 +23,36 @@ defmodule LambdaIO.GameLogic.Trigger do
     receive do
       {:trigger, player} ->
         # For the shot
+        # IO.inspect(player)
+        Enum.map(
+          player["shoot"], # Change the hole fuck to shot
+          fn shot ->
+            Action.materialize(:shot, shot, player["uuid"], pid_set_state)
+          end
+        )
 
-        Enum.map(player["actions"]["shot"], fn shot ->
-          Action.materialize(:shot, shot, player["uuid"], pid_set_state)
-        end)
+        # IO.inspect(player)
 
-        # For the damage
-        Action.materialize(:damage, player["actions"]["damage"], player["uuid"], pid_set_state)
+        # For the position
+        Action.materialize(:position, player["position"], player["uuid"], pid_set_state)
+
+        # For the score
+        Action.materialize(:score, player["score"], player["uuid"], pid_set_state)
+
+        # For the heath
+        Action.materialize(:health, player["health"], player["uuid"], pid_set_state)
+
+        evaluate(pid_set_state)
     end
   end
 
   def instantiate(key, pid_set_state) do
     Action.materialize(:create, pid_set_state,
       %{
-        "x" => 50,
-        "y" => 50,
+        "position" => %{
+          "x" => 400,
+          "y" => 300
+        },
         "score" => 0,
         "health" => 100,
         "uuid" => key,
