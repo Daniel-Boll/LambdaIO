@@ -23,7 +23,6 @@ defmodule LambdaIO.GameLogic.Trigger do
     receive do
       {:trigger, player} ->
         # For the shot
-        # IO.inspect(player)
         Enum.map(
           player["shoot"], # Change the hole fuck to shot
           fn shot ->

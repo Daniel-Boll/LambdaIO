@@ -69,7 +69,7 @@ defmodule LambdaIO.GameLogic.Action do
 
         updatedPlayer = %{currentPlayer | "position" => position}
 
-        IO.inspect([ updatedPlayer | otherPlayers ])
+        # IO.inspect([ updatedPlayer | otherPlayers ])
 
         send(
           pid_set_state,

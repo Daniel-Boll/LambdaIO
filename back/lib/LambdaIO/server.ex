@@ -12,10 +12,11 @@ defmodule LambdaIO.Server do
     pid_set_state  = spawn(LambdaIO.Server, :set_state, [%{"players" => [], "shoots"=>[]}])
     pid_gl_trigger = spawn(LambdaIO.GameLogic.Trigger, :evaluate, [pid_set_state])
 
-    pid_socket_sent_restriction = spawn(LambdaIO.Server, :socket_sent_restriction, [])
+    # pid_socket_sent_restriction = spawn(LambdaIO.Server, :socket_sent_restriction, [])
     pid_schedule_socket = spawn(LambdaIO.Server, :schedule_socket, [])
 
-    spawn(fn -> socket_loop(server, pid_set_state, pid_gl_trigger, pid_socket_sent_restriction, pid_schedule_socket) end)
+    # spawn(fn -> socket_loop(server, pid_set_state, pid_gl_trigger, pid_socket_sent_restriction, pid_schedule_socket) end)
+    spawn(fn -> socket_loop(server, pid_set_state, pid_gl_trigger, pid_schedule_socket) end)
     :ok
   end
 
@@ -33,7 +34,7 @@ defmodule LambdaIO.Server do
     end
   end
 
-  def socket_loop(server, pid_set_state, pid_gl_trigger, pid_socket_sent_restriction, pid_schedule_socket) do
+  def socket_loop(server, pid_set_state, pid_gl_trigger, pid_schedule_socket) do
     client = server |> Socket.Web.accept!
     client |> Socket.Web.accept!
 
@@ -45,11 +46,12 @@ defmodule LambdaIO.Server do
     pid_client_emmiter = spawn(fn -> client_emmiter(client, pid_set_state) end)
     spawn(LambdaIO.GameLogic.Trigger, :instantiate, [client.key, pid_set_state])
     spawn(fn -> client_receiver(client, pid_gl_trigger) end)
-    spawn(fn -> client_emmiter2(client, pid_gl_trigger) end)
+    # spawn(fn -> client_emmiter2(client, pid_gl_trigger) end)
 
+    pid_ssr = spawn(fn -> socket_sent_restriction() end)
 
-    # send(pid_schedule_socket, {:send, {pid_socket_sent_restriction, pid_client_emmiter, pid_set_state}})
-    socket_loop(server, pid_set_state, pid_gl_trigger, pid_socket_sent_restriction, pid_schedule_socket)
+    send(pid_schedule_socket, {:send, {pid_client_emmiter, pid_set_state, pid_ssr}})
+    socket_loop(server, pid_set_state, pid_gl_trigger, pid_schedule_socket)
   end
 
   def client_receiver(client, pid_gl_trigger) do
@@ -57,6 +59,7 @@ defmodule LambdaIO.Server do
       case client |> Socket.Web.recv! do
         {:text, json} ->
           {:ok, player} = JSON.decode(json)
+          # IO.inspect(client.key)
 
           send(pid_gl_trigger, {:trigger, player})
 
@@ -103,7 +106,8 @@ defmodule LambdaIO.Server do
     receive do
       {:context, pid_schedule_socket, pid_client_emmiter, pid_set_state, n} ->
         grab_state(n, pid_set_state, pid_client_emmiter)
-
+        IO.puts("Listening for client with PID:")
+        IO.inspect(pid_client_emmiter)
         send(
           pid_schedule_socket,
           {
@@ -116,9 +120,9 @@ defmodule LambdaIO.Server do
 
   def schedule_socket() do
     receive do
-      {:send, {pid_socket_sent_restriction, pid_client_emmiter, pid_set_state}} ->
+      {:send, {pid_client_emmiter, pid_set_state, pid_ssr}} ->
         Process.send_after(
-          pid_socket_sent_restriction,
+          pid_ssr,
           {:context, self(),pid_client_emmiter, pid_set_state, 60},
           1000
         )
