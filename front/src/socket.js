@@ -1,4 +1,4 @@
-let connection = new WebSocket("ws://26.117.43.153:3001");
+let connection = new WebSocket("ws://localhost:3001");
 
 let width = 800;
 let height = 600;
@@ -34,7 +34,7 @@ connection.onmessage = (evt) => {
     // console.log(evt.data);
     gameState = JSON.parse(evt.data);
   }
-  // console.log(gameState);
+  console.log(gameState);
 };
 
 const notify = () => {
